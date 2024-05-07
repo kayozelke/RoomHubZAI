@@ -190,20 +190,19 @@ class Reservations extends BaseController
         $data['isFilterEnabled'] = false;
         
         if ($this->request->getGet()) {
-            // $data['current_user'] = $user_model->findByEmail($this->request->getGet('user_email'));
+            $data['current_user'] = $user_model->findByEmail($this->request->getGet('user_email'));
 
-            // if(!$data['current_user']){
-            //     session()->setFlashdata('failure', 'Nie odnaleziono użytkownika \''.$this->request->getGet('user_email').'\'!');
-            //     print_r($data);
-            //     return redirect()->back();
+            if(!$data['current_user']){
+                session()->setFlashdata('failure', 'Nie odnaleziono użytkownika \''.$this->request->getGet('user_email').'\'!');
+                print_r($data);
+                return redirect()->back();
                 
-            // }
+            }
 
             if($this->request->getGet('show_deleted')){
                 $data['data'] = $reservation_model->filterFullReservationsDataByFieldValue($reservation_model -> findAllWithDeletedJoinFullDataOrdered(), 'user_id', $data['current_user']['id']);
             } else {
-                // $data['data'] = $reservation_model -> findAllWhereUserJoinFullDataOrdered($data['current_user']['id']);
-                $data['data'] = $reservation_model -> findAllWhereUserEmailJoinFullDataOrdered($this->request->getGet('user_email'));
+                $data['data'] = $reservation_model -> findAllWhereUserJoinFullDataOrdered($data['current_user']['id']);
             }
 
             if(!$data['data']){
@@ -257,81 +256,53 @@ class Reservations extends BaseController
         
         $reservation_model = new ReservationModel();
 
-        // if(isset($data['current_query']['show_deleted'])){
-        //     $data['data'] = $reservation_model -> findAllWithDeletedJoinFullDataOrdered();
-        // } else {
-        //     $data['data'] = $reservation_model -> findAllJoinFullDataOrdered();
-        // }
+        if(isset($data['current_query']['show_deleted'])){
+            $data['data'] = $reservation_model -> findAllWithDeletedJoinFullDataOrdered();
+        } else {
+            $data['data'] = $reservation_model -> findAllJoinFullDataOrdered();
+        }
 
-        // // add new column 'status' to existing data
-        // $data['data'] = $reservation_model->addColumnReservationStatus($data['data']);
+        // add new column 'status' to existing data
+        $data['data'] = $reservation_model->addColumnReservationStatus($data['data']);
 
 
         // * FILTERING
 
             // by id
-            // if($reservation_id != null){
-            //     $data['data'] = $reservation_model -> filterFullReservationsDataByFieldValue($data['data'], 'reservation_id', $reservation_id);
-            // }
+            if($reservation_id != null){
+                $data['data'] = $reservation_model -> filterFullReservationsDataByFieldValue($data['data'], 'reservation_id', $reservation_id);
+            }
 
-            // // by status (ended/active/waiting for start)
-            // if($status != null){
-            //     $data['data'] = $reservation_model->filterFullReservationsDataByFieldValue($data['data'], 'reservation_status', $status);
-            // }
+            // by status (ended/active/waiting for start)
+            if($status != null){
+                $data['data'] = $reservation_model->filterFullReservationsDataByFieldValue($data['data'], 'reservation_status', $status);
+            }
         
-            // // by email
-            // if($user_email != null){
-            //     $data['data'] = $reservation_model -> filterFullReservationsDataByFieldValue($data['data'], 'user_email', $user_email);
-            // }
+            // by email
+            if($user_email != null){
+                $data['data'] = $reservation_model -> filterFullReservationsDataByFieldValue($data['data'], 'user_email', $user_email);
+            }
 
-            // if($building_id != null){
-            //     $data['data'] = $reservation_model -> filterFullReservationsDataByFieldValue($data['data'], 'building_id', $building_id);
-            // }
+            if($building_id != null){
+                $data['data'] = $reservation_model -> filterFullReservationsDataByFieldValue($data['data'], 'building_id', $building_id);
+            }
 
-            // // by room_number (part containing)
-            // if($room_number != null){
-            //         $data['data'] = $reservation_model -> filterFullReservationsDataByFieldValue($data['data'], 'room_number', $room_number, true);
-            // }
+            // by room_number (part containing)
+            if($room_number != null){
+                    $data['data'] = $reservation_model -> filterFullReservationsDataByFieldValue($data['data'], 'room_number', $room_number, true);
+            }
             
-            // // filter by dates
-            // $data['data'] = $reservation_model->filterFullReservationsDataByDatesRange($data['data'], $start_date, $end_date);
+            // filter by dates
+            $data['data'] = $reservation_model->filterFullReservationsDataByDatesRange($data['data'], $start_date, $end_date);
 
-            // // filter by payment
-            // if($payment_done != null){
-            //     $data['data'] = $reservation_model->filterFullReservationsDataByFieldValue($data['data'], 'reservation_payment_done', $payment_done);
-            // }
+            // filter by payment
+            if($payment_done != null){
+                $data['data'] = $reservation_model->filterFullReservationsDataByFieldValue($data['data'], 'reservation_payment_done', $payment_done);
+            }
 
             
         // *
-        // echo "my payment done = $payment_done";
-        // V2
-        $start_date_arg = null;
-        $end_date_arg = null;
-        if(!is_null($start_date) && $start_date != ""){
-            $start_date_arg = ">= '".$start_date."'";
-            print_r("using start date: $start_date");
-        }
-        if(!is_null($end_date) && $end_date != ""){
-            $end_date_arg = "<= '".$end_date."'";
-            print_r("using end date: $end_date");
-        }
-
-
-        if(isset($data['current_query']['show_deleted'])){
-            $data['data'] = $reservation_model -> findReservationsQuery($reservation_id, $user_email, $building_id, $room_number, $start_date_arg, $end_date_arg, $payment_done, true);
-        } else {
-            $data['data'] = $reservation_model -> findReservationsQuery($reservation_id, $user_email, $building_id, $room_number, $start_date_arg, $end_date_arg, $payment_done, false);
-        }
-
-        // add new column 'status' to existing data
-        $data['data'] = $reservation_model->addColumnReservationStatus($data['data']);
-        
-        // by status (ended/active/waiting for start)
-        if($status != null){
-            $data['data'] = $reservation_model->filterFullReservationsDataByFieldValue($data['data'], 'reservation_status', $status);
-        }
-
-
+            
         echo view('templates/header');
         echo view('reservations/views/by_filter', $data);
         echo view('templates/footer');

@@ -17,9 +17,7 @@ class App extends BaseConfig
      *    http://example.com/
      */
     // public string $baseURL = 'http://localhost:8080/';
-    // public string $baseURL = 'http://apka.instaqram.pl/';
-    // public string $baseURL = 'http://18.200.182.11/';
-	public string $baseURL = 'http://student.ekipa.pro/';
+    public string $baseURL = 'http://apka.instaqram.pl/';
 
     /**
      * Allowed Hostnames in the Site URL other than the hostname in the baseURL.
